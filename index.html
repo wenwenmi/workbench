@@ -165,8 +165,27 @@
 
       <!-- 资源 -->
       <div id="stud-res" style="display:none">
-        <div id="res-list"></div>
-        <button class="btn btn-full" onclick="showResourceModal()">+ 添加资源</button>
+        <div class="card">
+          <div class="card-title">B站课程搜索</div>
+          <div style="display:flex;gap:8px;margin-bottom:10px">
+            <input class="input" id="bili-search" placeholder="搜索B站课程，如：Python、自动化" style="flex:1" onkeypress="if(event.key==='Enter')biliSearch()">
+            <button class="btn" onclick="biliSearch()">搜索</button>
+          </div>
+          <div class="bili-tags">
+            <span class="bili-tag" onclick="biliQuickSearch('Python入门')">Python入门</span>
+            <span class="bili-tag" onclick="biliQuickSearch('Python自动化')">Python自动化</span>
+            <span class="bili-tag" onclick="biliQuickSearch('Python爬虫')">Python爬虫</span>
+            <span class="bili-tag" onclick="biliQuickSearch('自动化办公')">自动化办公</span>
+            <span class="bili-tag" onclick="biliQuickSearch('Selenium自动化')">Selenium</span>
+            <span class="bili-tag" onclick="biliQuickSearch('Python数据分析')">数据分析</span>
+          </div>
+          <div id="bili-results"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">我的资源收藏</div>
+          <div id="res-list"></div>
+          <button class="btn btn-full" onclick="showResourceModal()">+ 添加资源</button>
+        </div>
       </div>
 
       <!-- 进度 -->
