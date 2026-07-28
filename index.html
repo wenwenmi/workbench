@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="文文的工作台">
+  <title>文文的工作台</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%2381C784'/><text x='50' y='68' font-size='48' text-anchor='middle' fill='white' font-family='sans-serif'>文</text></svg>">
+</head>
+<body>
+<div id="app">
+
+  <!-- 顶部标题栏 -->
+  <div class="header">
+    <div class="header-left">
+      <button class="menu-btn" onclick="toggleSidebar()">☰</button>
+    </div>
+    <div class="header-center">
+      <div class="header-title" id="header-title">待办</div>
+      <div class="header-subtitle" id="header-subtitle">文文的工作台</div>
+    </div>
+    <div class="header-right" id="header-date">2026.07.28</div>
+  </div>
+
+  <!-- 左侧抽屉导航 -->
+  <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="avatar">文</div>
+      <div class="sidebar-user">
+        <div class="sidebar-name">文文</div>
+        <div class="sidebar-desc">个人工作台</div>
+      </div>
+      <button class="sidebar-close" onclick="closeSidebar()">✕</button>
+    </div>
+    <div class="sidebar-nav">
+      <div class="nav-item active" id="nav-todo" onclick="switchModule('todo')">
+        <div class="nav-icon" style="background:#E8F5E9;color:#2E7D32">✓</div>
+        <span class="nav-text">个人待办</span>
+      </div>
+      <div class="nav-item" id="nav-account" onclick="switchModule('account')">
+        <div class="nav-icon" style="background:#FFF3E0;color:#EF6C00">¥</div>
+        <span class="nav-text">记账本</span>
+      </div>
+      <div class="nav-item" id="nav-fitness" onclick="switchModule('fitness')">
+        <div class="nav-icon" style="background:#E3F2FD;color:#1565C0">♥</div>
+        <span class="nav-text">运动健身</span>
+      </div>
+      <div class="nav-item" id="nav-calendar" onclick="switchModule('calendar')">
+        <div class="nav-icon" style="background:#F3E5F5;color:#7B1FA2">▦</div>
+        <span class="nav-text">日历天气</span>
+      </div>
+      <div class="nav-item" id="nav-study" onclick="switchModule('study')">
+        <div class="nav-icon" style="background:#E0F2F1;color:#00695C">✎</div>
+        <span class="nav-text">学习区</span>
+      </div>
+    </div>
+    <div class="sidebar-footer">
+      <div class="status-line">状态：<span>进行中</span></div>
+      <div class="time-line" id="sidebar-time">--</div>
+    </div>
+  </div>
+
+  <!-- 内容区 -->
+  <div class="content">
+
+    <!-- ===== 待办模块 ===== -->
+    <div class="module active" id="mod-todo">
+      <div class="stat-row" id="todo-stats"></div>
+      <div class="toggle-group" id="todo-filter">
+        <div class="toggle-btn active" data-filter="all">全部</div>
+        <div class="toggle-btn" data-filter="pending">未完成</div>
+        <div class="toggle-btn" data-filter="done">已完成</div>
+        <div class="toggle-btn" data-filter="overdue">已过期</div>
+      </div>
+      <div id="todo-list"></div>
+      <button class="btn btn-full" onclick="showTodoModal()">+ 新建待办</button>
+    </div>
+
+    <!-- ===== 记账模块 ===== -->
+    <div class="module" id="mod-account">
+      <div class="stat-row" id="acc-stats"></div>
+      <div id="acc-warn"></div>
+      <div class="card" id="acc-chart"></div>
+      <div class="card">
+        <div class="card-title">📒 记录列表</div>
+        <div id="acc-list"></div>
+      </div>
+      <div class="section-actions">
+        <button class="btn" onclick="showAccountModal()">+ 记一笔</button>
+        <button class="btn btn-outline" onclick="showBudgetModal()">设置预算</button>
+        <button class="btn btn-outline" onclick="exportAccounts()">导出CSV</button>
+      </div>
+    </div>
+
+    <!-- ===== 运动模块 ===== -->
+    <div class="module" id="mod-fitness">
+      <div class="stat-row" id="fit-stats"></div>
+      <div class="card" id="fit-goals"></div>
+      <div class="card" id="fit-chart"></div>
+      <div class="card">
+        <div class="card-title">🏃 运动记录</div>
+        <div id="fit-list"></div>
+      </div>
+      <div class="section-actions">
+        <button class="btn" onclick="showFitnessModal()">+ 记录运动</button>
+        <button class="btn btn-outline" onclick="showMetricModal()">记录指标</button>
+      </div>
+    </div>
+
+    <!-- ===== 日历天气模块 ===== -->
+    <div class="module" id="mod-calendar">
+      <div id="weather"></div>
+      <div class="fortune-card" id="fortune"></div>
+      <div class="card">
+        <div class="cal-nav">
+          <button onclick="calPrevMonth()">◀</button>
+          <span class="month-label" id="cal-month"></span>
+          <button onclick="calNextMonth()">▶</button>
+          <button class="btn btn-sm btn-outline" onclick="calGoToday()" style="white-space:nowrap;padding:5px 12px">今天</button>
+        </div>
+        <div class="cal-grid" id="cal-grid"></div>
+      </div>
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <div class="card-title" style="margin:0">📅 近期事件</div>
+          <button class="btn btn-sm btn-outline" onclick="showCityModal()">切换城市</button>
+        </div>
+        <div id="event-list"></div>
+      </div>
+    </div>
+
+    <!-- ===== 学习模块 ===== -->
+    <div class="module" id="mod-study">
+      <div class="toggle-group">
+        <div class="toggle-btn active" id="st-pomo" onclick="switchStudyTab('pomo')">⏱ 番茄钟</div>
+        <div class="toggle-btn" id="st-res" onclick="switchStudyTab('res')">📚 资源</div>
+        <div class="toggle-btn" id="st-proj" onclick="switchStudyTab('proj')">📊 进度</div>
+        <div class="toggle-btn" id="st-note" onclick="switchStudyTab('note')">📝 笔记</div>
+      </div>
+
+      <!-- 番茄钟 -->
+      <div id="stud-pomo">
+        <div class="stat-row" id="pomo-stats"></div>
+        <div class="card">
+          <div class="pomodoro-display">
+            <div class="pomodoro-time" id="pomo-time">25:00</div>
+            <div class="pomodoro-status" id="pomo-status">准备开始专注</div>
+          </div>
+          <div class="pomodoro-btns">
+            <button class="btn" id="pomo-btn" onclick="pomoStart()">开始</button>
+            <button class="btn btn-outline" onclick="pomoStop()">停止</button>
+          </div>
+          <div style="display:flex;gap:8px;margin-top:12px;align-items:center;justify-content:center">
+            <span style="font-size:13px;color:var(--text-light)">专注时长</span>
+            <input class="input" type="number" id="pomo-min-input" value="25" min="1" max="120" style="width:60px;text-align:center">
+            <span style="font-size:13px;color:var(--text-light)">分钟</span>
+            <button class="btn btn-sm btn-outline" onclick="pomoSetMin()">设置</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 资源 -->
+      <div id="stud-res" style="display:none">
+        <div id="res-list"></div>
+        <button class="btn btn-full" onclick="showResourceModal()">+ 添加资源</button>
+      </div>
+
+      <!-- 进度 -->
+      <div id="stud-proj" style="display:none">
+        <div id="proj-list"></div>
+        <button class="btn btn-full" onclick="showProjectModal()">+ 添加学习项目</button>
+      </div>
+
+      <!-- 笔记 -->
+      <div id="stud-note" style="display:none">
+        <div style="display:flex;gap:8px;margin-bottom:12px">
+          <button class="btn btn-full" onclick="addNote()">+ 新建笔记</button>
+        </div>
+        <div style="display:flex;gap:10px">
+          <div style="width:130px;flex-shrink:0" id="note-list"></div>
+          <div style="flex:1" id="note-editor"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- 弹窗 -->
+<div class="modal-overlay" id="modal">
+  <div class="modal" id="modal-body"></div>
+</div>
+
+<!-- Toast -->
+<div class="toasty" id="toast"></div>
+
+<script src="lunar.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
