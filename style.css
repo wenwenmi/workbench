@@ -145,3 +145,15 @@ html,body{height:100%;font-family:-apple-system,"PingFang SC","Helvetica Neue","
 .status-line{font-size:13px;color:var(--text-light);margin-bottom:4px;}
 .status-line span{color:var(--primary-dark);font-weight:700;}
 .time-line{font-size:12px;color:var(--text-light);}
+
+/* ===== B站课程搜索 ===== */
+.bili-tags{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;}
+.bili-tag{padding:5px 12px;border-radius:16px;background:var(--card-green);color:var(--primary-dark);font-size:12px;cursor:pointer;transition:all 0.2s;font-weight:600;user-select:none;}
+.bili-tag:active{background:var(--pink);color:var(--pink-text);transform:scale(0.95);}
+.bili-result-item{display:flex;gap:10px;padding:10px;background:var(--card-green);border-radius:10px;margin-bottom:8px;cursor:pointer;transition:all 0.2s;align-items:flex-start;}
+.bili-result-item:active{background:var(--pink);}
+.bili-result-item .bili-cover{width:100px;height:62px;border-radius:6px;object-fit:cover;flex-shrink:0;background:var(--bg-soft);}
+.bili-result-item .bili-info{flex:1;min-width:0;}
+.bili-result-item .bili-title{font-size:13px;font-weight:600;color:var(--text);line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.bili-result-item .bili-meta{font-size:11px;color:var(--text-light);margin-top:4px;display:flex;gap:8px;flex-wrap:wrap;}
+.bili-result-item .bili-meta span{display:flex;align-items:center;gap:2px;}
