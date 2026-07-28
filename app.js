@@ -823,6 +823,103 @@ function renderResources() {
       <button class="btn btn-sm btn-outline" onclick="event.stopPropagation();deleteResource(${i})">删</button>
     </div>`).join('');
 }
+
+// B站课程搜索
+function biliSearch() {
+  let kw = $('#bili-search').value.trim();
+  if (!kw) { toast('请输入关键词'); return; }
+  doBiliSearch(kw);
+}
+function biliQuickSearch(kw) {
+  $('#bili-search').value = kw;
+  doBiliSearch(kw);
+}
+function doBiliSearch(kw) {
+  $('#bili-results').innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-light)">搜索中...</div>';
+  // 使用 JSONP 调用 B 站搜索建议接口（无 CORS 限制）
+  let cbName = '_biliCb_' + Date.now();
+  window[cbName] = function(data) {
+    delete window[cbName];
+    document.body.removeChild(script);
+    renderBiliSuggest(kw, data);
+  };
+  let script = document.createElement('script');
+  script.src = `https://s.search.bilibili.com/main/suggest?term=${encodeURIComponent(kw)}&main_ver=v3&callback=${cbName}`;
+  script.onerror = function() {
+    // JSONP 失败时，直接提供跳转链接
+    delete window[cbName];
+    document.body.removeChild(script);
+    renderBiliDirectLink(kw);
+  };
+  document.body.appendChild(script);
+  // 超时兜底
+  setTimeout(function() {
+    if (window[cbName]) {
+      delete window[cbName];
+      try { document.body.removeChild(script); } catch(e) {}
+      renderBiliDirectLink(kw);
+    }
+  }, 5000);
+}
+function renderBiliSuggest(kw, data) {
+  let tags = (data.result && data.result.tag) || [];
+  let html = `<div style="margin-bottom:12px;padding:10px;background:var(--card-green);border-radius:10px">
+    <div style="font-size:13px;color:var(--text);margin-bottom:8px">「${kw}」相关搜索，点击直达B站：</div>
+    <div class="bili-tags">`;
+  // 加入原始关键词
+  html += `<span class="bili-tag" style="background:var(--primary);color:white" onclick="window.open('https://search.bilibili.com/all?keyword=${encodeURIComponent(kw)}&order=click')">「${kw}」按播放量排序</span>`;
+  tags.forEach(function(t) {
+    let term = t.value || t.term;
+    html += `<span class="bili-tag" onclick="window.open('https://search.bilibili.com/all?keyword=${encodeURIComponent(term)}&order=click')">${term}</span>`;
+  });
+  html += '</div></div>';
+  // 精选推荐链接
+  html += `<div class="bili-recommend">
+    <div style="font-size:13px;color:var(--text-light);margin:8px 0">精选推荐：</div>
+    <div class="bili-result-item" onclick="window.open('https://search.bilibili.com/all?keyword=${encodeURIComponent(kw)}&order=click')">
+      <div style="width:100px;height:62px;border-radius:6px;background:linear-gradient(135deg,#81C784,#66BB6A);display:flex;align-items:center;justify-content:center;color:white;font-size:24px;flex-shrink:0">▶</div>
+      <div class="bili-info">
+        <div class="bili-title">B站搜索「${kw}」- 按播放量排序</div>
+        <div class="bili-meta"><span>点击打开B站搜索结果页</span></div>
+      </div>
+    </div>
+    <div class="bili-result-item" onclick="window.open('https://search.bilibili.com/all?keyword=${encodeURIComponent(kw+' 教程')}&order=click')">
+      <div style="width:100px;height:62px;border-radius:6px;background:linear-gradient(135deg,#EC407A,#F06292);display:flex;align-items:center;justify-content:center;color:white;font-size:24px;flex-shrink:0">▶</div>
+      <div class="bili-info">
+        <div class="bili-title">「${kw} 教程」- 系统课程</div>
+        <div class="bili-meta"><span>筛选带"教程"关键词的结果</span></div>
+      </div>
+    </div>
+    <div class="bili-result-item" onclick="window.open('https://search.bilibili.com/all?keyword=${encodeURIComponent(kw+' 零基础')}&order=click')">
+      <div style="width:100px;height:62px;border-radius:6px;background:linear-gradient(135deg,#FFB74D,#FFA726);display:flex;align-items:center;justify-content:center;color:white;font-size:24px;flex-shrink:0">▶</div>
+      <div class="bili-info">
+        <div class="bili-title">「${kw} 零基础」- 入门课程</div>
+        <div class="bili-meta"><span>适合零基础学习者</span></div>
+      </div>
+    </div>
+  </div>`;
+  $('#bili-results').innerHTML = html;
+}
+function renderBiliDirectLink(kw) {
+  $('#bili-results').innerHTML = `
+    <div style="margin-bottom:8px;padding:10px;background:var(--card-green);border-radius:10px;font-size:13px;color:var(--text)">
+      点击下方链接直达B站搜索「${kw}」：
+    </div>
+    <div class="bili-result-item" onclick="window.open('https://search.bilibili.com/all?keyword=${encodeURIComponent(kw)}&order=click')">
+      <div style="width:100px;height:62px;border-radius:6px;background:linear-gradient(135deg,#81C784,#66BB6A);display:flex;align-items:center;justify-content:center;color:white;font-size:24px;flex-shrink:0">▶</div>
+      <div class="bili-info">
+        <div class="bili-title">B站搜索「${kw}」（按播放量）</div>
+        <div class="bili-meta"><span>点击跳转</span></div>
+      </div>
+    </div>
+    <div class="bili-result-item" onclick="window.open('https://search.bilibili.com/all?keyword=${encodeURIComponent(kw+' 教程')}&order=click')">
+      <div style="width:100px;height:62px;border-radius:6px;background:linear-gradient(135deg,#EC407A,#F06292);display:flex;align-items:center;justify-content:center;color:white;font-size:24px;flex-shrink:0">▶</div>
+      <div class="bili-info">
+        <div class="bili-title">「${kw} 教程」系统课程</div>
+        <div class="bili-meta"><span>点击跳转</span></div>
+      </div>
+    </div>`;
+}
 function showResourceModal() {
   $('#modal-body').innerHTML = `
     <h3>添加学习资源</h3>
