@@ -19,6 +19,60 @@ function toast(msg) {
 }
 function fmtMoney(n) { return '¥' + Number(n).toFixed(2); }
 
+// ========== 2026年中国法定节假日数据 ==========
+const HOLIDAYS_2026 = {
+  // 元旦
+  '2026-01-01': { type: 'holiday', name: '元旦' },
+  '2026-01-02': { type: 'holiday', name: '元旦' },
+  '2026-01-03': { type: 'holiday', name: '元旦' },
+  '2026-01-04': { type: 'workday', name: '调休' },
+  // 春节
+  '2026-02-15': { type: 'holiday', name: '春节' },
+  '2026-02-16': { type: 'holiday', name: '春节' },
+  '2026-02-17': { type: 'holiday', name: '春节' },
+  '2026-02-18': { type: 'holiday', name: '春节' },
+  '2026-02-19': { type: 'holiday', name: '春节' },
+  '2026-02-20': { type: 'holiday', name: '春节' },
+  '2026-02-21': { type: 'holiday', name: '春节' },
+  '2026-02-22': { type: 'holiday', name: '春节' },
+  '2026-02-23': { type: 'holiday', name: '春节' },
+  '2026-02-14': { type: 'workday', name: '调休' },
+  '2026-02-28': { type: 'workday', name: '调休' },
+  // 清明节
+  '2026-04-04': { type: 'holiday', name: '清明' },
+  '2026-04-05': { type: 'holiday', name: '清明' },
+  '2026-04-06': { type: 'holiday', name: '清明' },
+  // 劳动节
+  '2026-05-01': { type: 'holiday', name: '劳动节' },
+  '2026-05-02': { type: 'holiday', name: '劳动节' },
+  '2026-05-03': { type: 'holiday', name: '劳动节' },
+  '2026-05-04': { type: 'holiday', name: '劳动节' },
+  '2026-05-05': { type: 'holiday', name: '劳动节' },
+  '2026-05-09': { type: 'workday', name: '调休' },
+  // 端午节
+  '2026-06-19': { type: 'holiday', name: '端午' },
+  '2026-06-20': { type: 'holiday', name: '端午' },
+  '2026-06-21': { type: 'holiday', name: '端午' },
+  // 中秋节
+  '2026-09-25': { type: 'holiday', name: '中秋' },
+  '2026-09-26': { type: 'holiday', name: '中秋' },
+  '2026-09-27': { type: 'holiday', name: '中秋' },
+  // 国庆节
+  '2026-10-01': { type: 'holiday', name: '国庆' },
+  '2026-10-02': { type: 'holiday', name: '国庆' },
+  '2026-10-03': { type: 'holiday', name: '国庆' },
+  '2026-10-04': { type: 'holiday', name: '国庆' },
+  '2026-10-05': { type: 'holiday', name: '国庆' },
+  '2026-10-06': { type: 'holiday', name: '国庆' },
+  '2026-10-07': { type: 'holiday', name: '国庆' },
+  '2026-09-20': { type: 'workday', name: '调休' },
+  '2026-10-10': { type: 'workday', name: '调休' },
+};
+
+function getHoliday(ds) {
+  return HOLIDAYS_2026[ds];
+}
+
 // ========== 导航 ==========
 const MODULES = ['todo', 'account', 'fitness', 'calendar', 'study'];
 const MODULE_NAMES = { todo: '个人待办', account: '记账本', fitness: '运动健身', calendar: '日历天气', study: '学习区' };
@@ -55,7 +109,7 @@ function updateSidebarTime() {
   let days = ['周日','周一','周二','周三','周四','周五','周六'];
   let timeStr = `${now.getMonth()+1}月${now.getDate()}日 ${days[now.getDay()]} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
   $('#sidebar-time').textContent = timeStr;
-  $('#header-date').textContent = `${now.getMonth()+1}.${String(now.getDate()).padStart(2,'0')}`;
+  $('#header-date').innerHTML = `${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')}<br>${days[now.getDay()]}`;
 }
 
 // ========== 待办模块 ==========
@@ -522,8 +576,11 @@ function renderCalendar() {
     let hasEvent = events.some(e => e.date === ds);
     let dow = new Date(calYear, calMonth, d).getDay();
     let isWeekend = dow === 0 || dow === 6;
-    html += `<div class="cal-day ${isToday?'today':''} ${hasEvent?'has-event':''} ${isWeekend?'weekend':''}" onclick="showEventModal('${ds}')">
-      <span class="solar">${d}</span><span class="lunar">${lunar?lunar.dayStr:''}</span>
+    let holiday = getHoliday(ds);
+    let holidayClass = holiday ? (holiday.type === 'holiday' ? 'cal-holiday' : 'cal-workday') : '';
+    let holidayBadge = holiday ? `<span class="cal-badge ${holiday.type}">${holiday.name}</span>` : '';
+    html += `<div class="cal-day ${isToday?'today':''} ${hasEvent?'has-event':''} ${isWeekend?'weekend':''} ${holidayClass}" onclick="showEventModal('${ds}')">
+      <span class="solar">${d}</span>${holidayBadge}<span class="lunar">${lunar?lunar.dayStr:''}</span>
     </div>`;
   }
   // 下月填充
@@ -532,6 +589,7 @@ function renderCalendar() {
   for (let d = 1; d <= fill; d++) {
     let nextM = calMonth === 11 ? 0 : calMonth + 1;
     let nextY = calMonth === 11 ? calYear + 1 : calYear;
+    let ds = `${nextY}-${String(nextM+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
     let lunar = solar2lunar(nextY, nextM+1, d);
     html += `<div class="cal-day other-month"><span class="solar">${d}</span><span class="lunar">${lunar?lunar.dayStr:''}</span></div>`;
   }
@@ -566,12 +624,20 @@ function renderFortune() {
   let today = new Date();
   let ds = todayStr();
   let lunar = solar2lunar(today.getFullYear(), today.getMonth()+1, today.getDate());
-  let sign = getZodiacSign(today.getMonth()+1, today.getDate());
+  let defaultSign = getZodiacSign(today.getMonth()+1, today.getDate());
+  let savedSign = DB.get('fortuneSign', defaultSign);
+  let sign = savedSign;
   let fortune = getDailyFortune(ds, sign);
 
   let lunarStr = lunar ? `${lunar.ganzhi}年（${lunar.zodiac}年）${lunar.monthStr}${lunar.dayStr}` : '';
+  const signs = ['白羊座','金牛座','双子座','巨蟹座','狮子座','处女座','天秤座','天蝎座','射手座','摩羯座','水瓶座','双鱼座'];
+  let signOptions = signs.map(s => `<option value="${s}" ${s===sign?'selected':''}>${s}</option>`).join('');
+
   $('#fortune').innerHTML = `
-    <div class="f-title">今日运势 · ${sign}</div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      <div class="f-title">今日运势 · ${sign}</div>
+      <select class="select" id="fortune-sign-select" onchange="changeFortuneSign(this.value)" style="width:auto;min-width:90px;font-size:12px;padding:4px 8px">${signOptions}</select>
+    </div>
     ${lunarStr ? `<div style="font-size:12px;color:var(--pink-text);opacity:0.7;margin-bottom:8px">${lunarStr}</div>` : ''}
     <div class="f-row"><span class="f-label">幸运颜色</span><span class="f-val">${fortune.luckyColor}</span></div>
     <div class="f-row"><span class="f-label">幸运数字</span><span class="f-val">${fortune.luckyNum}</span></div>
@@ -582,6 +648,11 @@ function renderFortune() {
     <div class="f-row"><span class="f-label">财运</span><span class="f-val stars">${stars(fortune.wealth)}</span></div>
     <div class="f-row"><span class="f-label">健康</span><span class="f-val stars">${stars(fortune.health)}</span></div>
     <div class="tip">提示：${fortune.tip}</div>`;
+}
+function changeFortuneSign(sign) {
+  DB.set('fortuneSign', sign);
+  renderFortune();
+  toast('已切换到 ' + sign);
 }
 
 function fetchWeather() {
@@ -683,12 +754,23 @@ function deleteEvent(idx) {
 }
 
 function showCityModal() {
+  const beijingDistricts = [
+    ['东城区','Dongcheng,Beijing'],['西城区','Xicheng,Beijing'],['朝阳区','Chaoyang,Beijing'],
+    ['丰台区','Fengtai,Beijing'],['石景山区','Shijingshan,Beijing'],['海淀区','Haidian,Beijing'],
+    ['门头沟区','Mentougou,Beijing'],['房山区','Fangshan,Beijing'],['通州区','Tongzhou,Beijing'],
+    ['顺义区','Shunyi,Beijing'],['昌平区','Changping,Beijing'],['大兴区','Daxing,Beijing'],
+    ['怀柔区','Huairou,Beijing'],['平谷区','Pinggu,Beijing'],['密云区','Miyun,Beijing'],
+    ['延庆区','Yanqing,Beijing']
+  ];
   const cities = ['北京','上海','广州','深圳','杭州','成都','武汉','西安','南京','重庆','苏州','天津'];
   const cityMap = {'北京':'Beijing','上海':'Shanghai','广州':'Guangzhou','深圳':'Shenzhen','杭州':'Hangzhou','成都':'Chengdu','武汉':'Wuhan','西安':'Xian','南京':'Nanjing','重庆':'Chongqing','苏州':'Suzhou','天津':'Tianjin'};
   let cur = getCity();
+  let isBeijing = cur.name === '北京' || cur.name.endsWith('区');
+  let districtSelect = `<div class="field" id="bj-district-field" style="display:${isBeijing?'block':'none'}"><label>北京区域</label><select class="select" id="ct-district">${beijingDistricts.map(([n,q])=>`<option value="${q}" ${cur.query===q?'selected':''}>${n}</option>`).join('')}</select></div>`;
   $('#modal-body').innerHTML = `
     <h3>切换城市</h3>
-    <div class="field"><label>常用城市</label><select class="select" id="ct-name">${cities.map(c=>`<option ${c===cur.name?'selected':''}>${c}</option>`).join('')}</select></div>
+    <div class="field"><label>常用城市</label><select class="select" id="ct-name" onchange="toggleDistrictField()">${cities.map(c=>`<option ${c===cur.name?'selected':''}>${c}</option>`).join('')}</select></div>
+    ${districtSelect}
     <div class="field"><label>或输入其他城市（中文/拼音）</label><input class="input" id="ct-custom" placeholder="留空则使用上方选择"></div>
     <div class="modal-actions">
       <button class="btn btn-outline" onclick="closeModal()">取消</button>
@@ -696,12 +778,26 @@ function showCityModal() {
     </div>`;
   $('#modal').classList.add('show');
 }
+function toggleDistrictField() {
+  let name = $('#ct-name').value;
+  let field = $('#bj-district-field');
+  if (field) field.style.display = name === '北京' ? 'block' : 'none';
+}
 function saveCityModal() {
   let custom = $('#ct-custom').value.trim();
-  let name = $('#ct-name').value;
-  const cityMap = {'北京':'Beijing','上海':'Shanghai','广州':'Guangzhou','深圳':'Shenzhen','杭州':'Hangzhou','成都':'Chengdu','武汉':'Wuhan','西安':'Xian','南京':'Nanjing','重庆':'Chongqing','苏州':'Suzhou','天津':'Tianjin'};
-  if (custom) saveCity({ name: custom, query: custom });
-  else saveCity({ name, query: cityMap[name] || name });
+  if (custom) {
+    saveCity({ name: custom, query: custom });
+  } else {
+    let name = $('#ct-name').value;
+    const cityMap = {'北京':'Beijing','上海':'Shanghai','广州':'Guangzhou','深圳':'Shenzhen','杭州':'Hangzhou','成都':'Chengdu','武汉':'Wuhan','西安':'Xian','南京':'Nanjing','重庆':'Chongqing','苏州':'Suzhou','天津':'Tianjin'};
+    let district = $('#ct-district')?.value;
+    if (name === '北京' && district) {
+      let districtName = district.split(',')[0];
+      saveCity({ name: '北京' + districtName.replace('District','').replace('，',''), query: district });
+    } else {
+      saveCity({ name, query: cityMap[name] || name });
+    }
+  }
   closeModal();
   fetchWeather();
   toast('已切换');
